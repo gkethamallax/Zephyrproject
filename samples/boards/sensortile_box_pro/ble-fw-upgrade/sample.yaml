@@ -1,0 +1,15 @@
+sample:
+  description: SensorTile.box Pro board ble firmware upgrade
+  name: SensorTile.box Pro fw upgrade
+tests:
+  sample.board.sensortile_box_pro.ble-fw-upgrade:
+    harness: bluetooth
+    platform_allow: sensortile_box_pro
+    tags: bluetooth
+    depends_on:
+      - gpio
+      - uart
+    # This test cannot be run in CI as it requires the presence of a
+    # f/w blob that is not fetched by CI iself, as mentioned in
+    # https://docs.zephyrproject.org/latest/contribute/bin_blobs.html#support-and-maintenance
+    skip: true
