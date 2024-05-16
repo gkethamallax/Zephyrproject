@@ -184,7 +184,9 @@ class BinaryHandler(Handler):
             os.unlink(self.pid_fn)
             self.pid_fn = None  # clear so we don't try to kill the binary twice
             try:
-                os.kill(pid, signal.SIGKILL)
+                p = psutil.Process(pid)
+                p.kill()
+                p.wait(1)
             except (ProcessLookupError, psutil.NoSuchProcess):
                 pass
 
