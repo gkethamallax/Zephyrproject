@@ -13,7 +13,7 @@
 extern "C" {
 #endif
 
-#if defined(CONFIG_SOC_MIMX9596_A55)
+#if defined(CONFIG_SOC_MIMX9596)
 #include <zephyr/dt-bindings/clock/imx95_clk_scmi.h>
 #define SCMI_CLK_SRC_NUM IMX95_CCM_NUM_CLK_SRC
 #endif
