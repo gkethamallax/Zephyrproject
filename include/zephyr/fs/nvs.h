@@ -165,6 +165,20 @@ ssize_t nvs_read_hist(struct nvs_fs *fs, uint16_t id, void *data, size_t len, ui
 ssize_t nvs_calc_free_space(struct nvs_fs *fs);
 
 /**
+ * @brief Check if the required free space can be found contiguously somewhere in the NVS.
+ *
+ * @note The NVS garbage collector may be called by this function to make some room.
+ *
+ * @param fs Pointer to the file system.
+ * @param id ID of the entry to check space for.
+ * @param len The wanted contiguous length to check for availability.
+ *
+ * @retval 0 On success, if there is enough space available.
+ * @return On error, returns negative value of errno.h defined error codes.
+ */
+int nvs_check_available_space(struct nvs_fs *fs, uint16_t id, size_t len);
+
+/**
  * @}
  */
 
