@@ -6,6 +6,18 @@ config COMMON_LIBC_ABORT
 	help
 	  common implementation of abort().
 
+config COMMON_LIBC_ASCTIME
+	bool
+	help
+	  common implementation of asctime().
+
+config COMMON_LIBC_ASCTIME_R
+	bool "Thread-safe version of asctime()"
+	default y if POSIX_THREAD_SAFE_FUNCTIONS
+	select COMMON_LIBC_ASCTIME
+	help
+	  common implementation of asctime_r().
+
 config COMMON_LIBC_GMTIME_R
 	bool
 	help
