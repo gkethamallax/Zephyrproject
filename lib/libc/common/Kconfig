@@ -18,6 +18,19 @@ config COMMON_LIBC_ASCTIME_R
 	help
 	  common implementation of asctime_r().
 
+config COMMON_LIBC_CTIME
+	bool
+	select COMMON_LIBC_LOCALTIME_R_UTC
+	help
+	  common implementation of ctime().
+
+config COMMON_LIBC_CTIME_R
+	bool "Thread-safe version of ctime()"
+	default y if POSIX_THREAD_SAFE_FUNCTIONS
+	select COMMON_LIBC_CTIME
+	help
+	  common implementation of ctime_r().
+
 config COMMON_LIBC_GMTIME_R
 	bool
 	help
