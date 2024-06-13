@@ -52,6 +52,8 @@ struct tm *gmtime(const time_t *timep);
 struct tm *gmtime_r(const time_t *ZRESTRICT timep,
 		    struct tm *ZRESTRICT result);
 char *asctime(const struct tm *timeptr);
+struct tm *localtime(const time_t *timer);
+struct tm *localtime_r(const time_t *ZRESTRICT timer, struct tm *ZRESTRICT result);
 
 #if defined(CONFIG_COMMON_LIBC_ASCTIME_R) || defined(__DOXYGEN__)
 char *asctime_r(const struct tm *ZRESTRICT tp, char *ZRESTRICT buf);
