@@ -915,7 +915,7 @@ _POSIX_THREAD_SAFE_FUNCTIONS
     putc_unlocked(),
     putchar_unlocked(),
     rand_r(), yes
-    readdir_r(),
+    readdir_r(), yes
     strerror_r(), yes
     strtok_r(), yes
 
