@@ -48,6 +48,12 @@ config USB_DEVICE_SN
 	  Serial Number String will be derived from
 	  Hardware Information Driver (HWINFO).
 
+config USB_DEVICE_CONFIGURATION
+	string "USB device configuration string"
+	default "Zephyr USB Sample"
+	help
+	  USB device configuration string.
+
 config USB_COMPOSITE_DEVICE
 	bool "Use Interface Association Descriptor code triple"
 	help
