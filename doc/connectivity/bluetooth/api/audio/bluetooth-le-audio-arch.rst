@@ -59,6 +59,96 @@ GAF has been implemented in Zephyr with the following structure.
 
    Zephyr Generic Audio Framework
 
+
+Dependency on GATT
+==================
+
+The following tables show the required sub-procedures from GATT for each of the
+LE Audio profiles and services.
+
+.. table:: GATT sub-procedures for LE Audio profiles
+   :widths: auto
+
++------------------------------------------+-----+-----+-----+------+------+-----+-----+------+-----+------+
+| GATT sub-procedure                       | BAP | CCP | CAP | CSIP | GMAP | HAP | MCP | MICP | PBP | TMAP |
++==========================================+=====+=====+=====+======+======+=====+=====+======+=====+======+
+| Exchange MTU                             | M   |     | I   |      |      | I   |     |      |     |      |
++------------------------------------------+-----+-----+-----+------+------+-----+-----+------+-----+------+
+| Discover all primary services            | C.1 | C.1 | I   | C.1  | C.1  | C.1 | C.1 | C.1  |     | C.1  |
++------------------------------------------+-----+-----+-----+------+------+-----+-----+------+-----+------+
+| Discover Primary services by UUID        | C.1 | C.1 | I   | C.1  | C.1  | C.1 | C.1 | C.1  |     | C.1  |
++------------------------------------------+-----+-----+-----+------+------+-----+-----+------+-----+------+
+| Find Included Services                   |     | O   | I   | M    |      |     | O   | C.5  |     |      |
++------------------------------------------+-----+-----+-----+------+------+-----+-----+------+-----+------+
+| Discover All characteristics of a server | C.2 | C.2 | I   | C.2  | C.2  |     | C.2 | C.2  |     | C.2  |
++------------------------------------------+-----+-----+-----+------+------+-----+-----+------+-----+------+
+| Discover Characteristic by UUID          | C2  | C2  | I   | C2   | C2   |     | C2  | C2   |     | C2   |
++------------------------------------------+-----+-----+-----+------+------+-----+-----+------+-----+------+
+| Discover All Characteristic Descriptors  | M   | M   | I   | M    |      |     | M   | M    |     |      |
++------------------------------------------+-----+-----+-----+------+------+-----+-----+------+-----+------+
+| Read Characteristic Value                | M   | M   | I   | M    |      | C.3 | M   | M    |     | M    |
++------------------------------------------+-----+-----+-----+------+------+-----+-----+------+-----+------+
+| Read Using Characteristic UUID           |     |     | I   |      |      | C.3 |     |      |     |      |
++------------------------------------------+-----+-----+-----+------+------+-----+-----+------+-----+------+
+| Write Characteristic Value               | M   | C.3 | I   | M    |      |     | C.3 | M    |     |      |
++------------------------------------------+-----+-----+-----+------+------+-----+-----+------+-----+------+
+| Write Without Response                   | M   | C.3 | I   |      |      |     | C.3 |      |     |      |
++------------------------------------------+-----+-----+-----+------+------+-----+-----+------+-----+------+
+| Notifications                            | M   | M   | I   | O    |      |     | M   | M    |     |      |
++------------------------------------------+-----+-----+-----+------+------+-----+-----+------+-----+------+
+| Read Characteristic Descriptors          | M   | M   | I   | M    |      |     | M   | M    |     |      |
++------------------------------------------+-----+-----+-----+------+------+-----+-----+------+-----+------+
+| Write Characteristic Descriptors         | M   | M   | I   | C.4  |      |     | M   | M    |     |      |
++------------------------------------------+-----+-----+-----+------+------+-----+-----+------+-----+------+
+| Read Long Characteristic Value           |     | M   | I   |      |      |     |     |      |     |      |
++------------------------------------------+-----+-----+-----+------+------+-----+-----+------+-----+------+
+| Write Long Characteristic Value          | M   |     | I   |      |      |     |     |      |     |      |
++------------------------------------------+-----+-----+-----+------+------+-----+-----+------+-----+------+
+
+Notes:
+
+* M Mandatory
+* O Optional
+* C.1 Mandatory to support at least one Primary Service Discovery procedure
+* C.2 Mandatory to support at least one Characteristic Discovery procedure
+* C.3 Mandatory to support at least one
+* C.4 Mandatory if the Notifcations sub-procedure is supported
+* C.5 Mandatory if AICS procedures are supported
+* I Inherited
+
+.. table:: GATT sub-procedures for LE Audio services
+   :widths: auto
++----------------------------------+------+------+------+-----+------+-----+-----+------+------+-----+-----+------+------+
+| GATT sub-procedure               | AICS | ASCS | BASS | CAS | CSIS | HAS | MCS | MICS | PACS | TBS | VCS | VOCS | TMAS |
++==================================+======+======+======+=====+======+=====+=====+======+======+=====+=====+======+======+
+| Write Characteristic Value       | M    | M    | M    |     | C.2  | C.3 | M   | M    | M    | M   | M   | M    |      |
++----------------------------------+------+------+------+-----+------+-----+-----+------+------+-----+-----+------+------+
+| Write Without Response           |      | M    | M    |     |      |     | M   |      |      | M   |     |      |      |
++----------------------------------+------+------+------+-----+------+-----+-----+------+------+-----+-----+------+------+
+| Notifications                    | M    | M    | M    |     | C.2  | C.4 | M   | M    | M    | M   | M   | M    |      |
++----------------------------------+------+------+------+-----+------+-----+-----+------+------+-----+-----+------+------+
+| Indications                      |      |      |      |     |      | C.3 |     |      |      |     |     |      |      |
++----------------------------------+------+------+------+-----+------+-----+-----+------+------+-----+-----+------+------+
+| Read Characteristic Descriptors  | M    | M    | M    |     | C.2  | C.3 | M   | M    | M    | M   | M   | M    |      |
++----------------------------------+------+------+------+-----+------+-----+-----+------+------+-----+-----+------+------+
+| Write Characteristic Descriptors | M    | M    | M    |     | C.2  | C.3 | M   | M    | M    | M   | M   | M    |      |
++----------------------------------+------+------+------+-----+------+-----+-----+------+------+-----+-----+------+------+
+| Write Long Characteristic Value  |      | M    | C.1  |     |      |     |     |      |      |     |     |      |      |
++----------------------------------+------+------+------+-----+------+-----+-----+------+------+-----+-----+------+------+
+| Read Long Characteristic Value   |      | C.5  | C.5  |     |      |     | C.5 |      |      | C.5 |     |      |      |
++----------------------------------+------+------+------+-----+------+-----+-----+------+------+-----+-----+------+------+
+
+Notes:
+
+* M Mandatory
+* C.1 Mandatory if the Add Source operation is supported
+* C.2 Mandatory if Set Membert Lock characteristic is supported
+* C.3 Mandatory if the Hearing Aid Present Control Point characteristic is supported
+* C.4 Mandatory if the Hearing Aid Present Control Point characteristic and EATT are both supported
+* C.5 Mandatory if it supports characteristic values larger than the ATT_MTU
+
+
+
 Bluetooth Audio Stack Status
 ============================
 
