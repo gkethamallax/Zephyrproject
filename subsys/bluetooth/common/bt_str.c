@@ -8,6 +8,7 @@
  */
 
 #include <stddef.h>
+#include <stdio.h>
 
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/bluetooth/hci.h>
@@ -62,9 +63,11 @@ const char *bt_uuid_str(const struct bt_uuid *uuid)
 	return str;
 }
 
+#if defined(CONFIG_BT_DEBUG_HCI_ERR_TO_STR)
 const char *bt_hci_err_to_str(uint8_t hci_err)
 {
-	#define HCI_ERR(err) [err] = #err
+
+	#define HCI_ERR(err) [err] = #err "(" STRINGIFY(err) ")"
 
 	const char * const mapping_table[] = {
 		HCI_ERR(BT_HCI_ERR_SUCCESS),
@@ -141,8 +144,18 @@ const char *bt_hci_err_to_str(uint8_t hci_err)
 	if (hci_err < ARRAY_SIZE(mapping_table) && mapping_table[hci_err]) {
 		return mapping_table[hci_err];
 	} else {
-		return "(unknown)";
+		static char err_as_hex[17];
+		sprintf(err_as_hex, "(unknown)(0x%02x)", hci_err);
+		return err_as_hex;
 	}
 
 	#undef HCI_ERR
 }
+#else
+const char *bt_hci_err_to_str(uint8_t err)
+{
+	static char err_as_hex[5];
+	sprintf(err_as_hex, "0x%02x", err);
+	return err_as_hex;
+}
+#endif /* CONFIG_BT_DEBUG_HCI_ERR_TO_STR */
