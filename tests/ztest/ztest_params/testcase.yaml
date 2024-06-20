@@ -1,0 +1,3 @@
+tests:
+  ztest.ztest_params:
+    tag: test_framework
