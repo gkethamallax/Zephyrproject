@@ -167,6 +167,9 @@ set(efr32_radio_brd4170a_DEPRECATED
 set(efr32_radio_brd4180a_DEPRECATED
     slwrb4180a
 )
+set(efr32_radio_brd4180b_DEPRECATED
+    slwrb4180b
+)
 set(efr32_radio_brd4187c_DEPRECATED
     xg24_rb4187c
 )
