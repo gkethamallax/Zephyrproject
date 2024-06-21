@@ -3,6 +3,7 @@
 zephyr_library()
 zephyr_library_sources(
   bt.c
+  bt_shell_private.c
   hci.c
   )
 zephyr_library_sources_ifdef(
