@@ -148,8 +148,13 @@ config CPP_STATIC_INIT_GNU
 	# initialization of CPP static objects, new toolchains can be added
 	# here if required.
 	def_bool "$(ZEPHYR_TOOLCHAIN_VARIANT)" != "arcmwdt"
+	select STATIC_INIT_GNU
+	select DEPRECATED
 	help
-	  GNU-compatible initialization of CPP static objects
+	  GNU-compatible initialization of static objects.
+
+	  As Zephyr now includes this functionality even when C++ is not
+	  in use, this option is no longer necessary.
 
 endif # CPP
 

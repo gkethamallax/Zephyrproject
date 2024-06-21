@@ -955,6 +955,27 @@ endmenu
 rsource "Kconfig.mem_domain"
 rsource "Kconfig.smp"
 
+config STATIC_INIT_GNU_SUPPORTED
+	# As of today only ARC MWDT toolchain doesn't support GNU-compatible
+	# initialization of static objects, new toolchains can be added
+	# here if required.
+	def_bool y
+	depends on "$(ZEPHYR_TOOLCHAIN_VARIANT)" != "arcmwdt"
+
+config STATIC_INIT_GNU
+	bool "Support GNU-compatible initializers and constructors"
+	default y
+	depends on STATIC_INIT_GNU_SUPPORTED
+	depends on !CMAKE_LINKER_GENERATOR
+	help
+	  GNU-compatible initialization of static objects. Zephyr itself
+	  has an internal system for running module-specific initialization
+	  code but C++ code and any external C modules may use initializers
+	  as defined by GNU-compatible toolchains. This increases the size
+	  of Zephyr binaries by around 100 bytes. If you know your
+	  application doesn't need any initializers, you can disable this
+	  option.
+
 config TICKLESS_KERNEL
 	bool "Tickless kernel"
 	default y if TICKLESS_CAPABLE
