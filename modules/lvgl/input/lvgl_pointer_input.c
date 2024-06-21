@@ -30,9 +30,9 @@ struct lvgl_pointer_input_data {
 static void lvgl_pointer_process_event(const struct device *dev, struct input_event *evt)
 {
 	const struct lvgl_pointer_input_config *cfg = dev->config;
-	struct lvgl_pointer_input_data *data = dev->data;
-	lv_disp_t *disp = lv_disp_get_default();
-	struct lvgl_disp_data *disp_data = disp->driver->user_data;
+	struct lvgl_common_input_data *data = dev->data;
+	lv_display_t *disp = lv_display_get_default();
+	struct lvgl_disp_data *disp_data = (struct lvgl_disp_data *)lv_display_get_user_data(disp);
 	struct display_capabilities *cap = &disp_data->cap;
 	lv_point_t *point = &data->common_data.pending_event.point;
 
