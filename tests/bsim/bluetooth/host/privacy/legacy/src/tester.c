@@ -18,6 +18,7 @@
 LOG_MODULE_REGISTER(tester, 4);
 
 struct test_data_t {
+	int64_t		adv_start_time;
 	bt_addr_le_t	old_addr;
 	int64_t		old_time;
 	int		rpa_rotations;
@@ -37,6 +38,7 @@ void print_address(const bt_addr_le_t *addr)
 static void cb_expect_rpa(const bt_addr_le_t *addr, int8_t rssi, uint8_t type,
 			  struct net_buf_simple *ad)
 {
+	int64_t now = k_uptime_get();
 	int64_t diff_ms, rpa_timeout_ms;
 
 	if (bt_addr_le_eq(addr, &dut_addr)) {
@@ -45,8 +47,18 @@ static void cb_expect_rpa(const bt_addr_le_t *addr, int8_t rssi, uint8_t type,
 
 	/* Only save the address + time if this is the first scan */
 	if (bt_addr_le_eq(&test_data.old_addr, BT_ADDR_LE_ANY)) {
+		int64_t scanner_startup_delay = now - test_data.adv_start_time;
+
+		/* The SDC Controller will miss the first few advertisements due
+		 * to scanner warm-up time. Using the first advertisement report
+		 * as the time reference when the first RPA was generated will
+		 * not be correct. The actual time when the first RPA was
+		 * generated is recorded in `test_data.adv_start_time`.
+		 */
+		LOG_INF("compensating scanner_startup_delay: %d ms", scanner_startup_delay);
+		test_data.old_time = test_data.adv_start_time;
+
 		bt_addr_le_copy(&test_data.old_addr, addr);
-		test_data.old_time = k_uptime_get();
 		return;
 	}
 
@@ -63,7 +75,7 @@ static void cb_expect_rpa(const bt_addr_le_t *addr, int8_t rssi, uint8_t type,
 	test_data.rpa_rotations++;
 
 	/* Ensure the RPA rotation occurs within +-10% of CONFIG_BT_RPA_TIMEOUT */
-	diff_ms = k_uptime_get() - test_data.old_time;
+	diff_ms = now - test_data.old_time;
 	rpa_timeout_ms = CONFIG_BT_RPA_TIMEOUT * MSEC_PER_SEC;
 
 	if (abs(diff_ms - rpa_timeout_ms) > (rpa_timeout_ms / 10)) {
@@ -71,7 +83,7 @@ static void cb_expect_rpa(const bt_addr_le_t *addr, int8_t rssi, uint8_t type,
 	}
 
 	bt_addr_le_copy(&test_data.old_addr, addr);
-	test_data.old_time = k_uptime_get();
+	test_data.old_time = now;
 
 	if (test_data.rpa_rotations > EXPECTED_NUM_ROTATIONS) {
 		PASS("PASS\n");
@@ -141,6 +153,7 @@ void tester_procedure(void)
 	start_scanning(false);
 
 	backchannel_sync_wait();
+	test_data.adv_start_time = k_uptime_get();
 
 	start_scanning(true);
 }
