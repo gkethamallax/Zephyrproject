@@ -1,0 +1,57 @@
+/*
+ * Copyright (c) 2024 Linumiz
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <zephyr/dt-bindings/display/panel.h>
+
+/ {
+	lvgl_pointer {
+		compatible = "zephyr,lvgl-pointer-input";
+		input = <&ft5336>;
+	};
+
+	chosen {
+		zephyr,display = &ltdc;
+	};
+};
+
+&ltdc {
+	status = "okay";
+	ext-sdram = <&sdram1>;
+
+	/* orisetech, otm8009a */
+	width = <800>;
+	height = <480>;
+	display-timings {
+		compatible = "zephyr,panel-timing";
+		hsync-active = <0>;
+		vsync-active = <0>;
+		de-active = <0>;
+		pixelclk-active = <0>;
+		hsync-len = <2>;
+		vsync-len = <1>;
+		hback-porch = <34>;
+		vback-porch = <15>;
+		hfront-porch = <34>;
+		vfront-porch = <16>;
+	};
+
+	def-back-color-red = <0>;
+	def-back-color-green = <0>;
+	def-back-color-blue = <0>;
+	pixel-format = <PANEL_PIXEL_FORMAT_RGB_888>;
+};
+
+&mipi_dsi {
+	status = "okay";
+
+	pll-ndiv = <100>;
+	pll-idf = <5>;
+	pll-odf = <0>;
+
+	vs-active-high;
+	hs-active-high;
+	de-active-high;
+};
