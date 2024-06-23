@@ -218,6 +218,15 @@ Test cases are detected by the presence of a ``testcase.yaml`` or a ``sample.yam
 files in the application's project directory. This file may contain one or more
 entries in the test section each identifying a test scenario.
 
+.. _twister_test_project_diagram:
+
+.. figure:: figures/twister_test_project.svg
+   :alt: Twister and a Test applications' project.
+   :figclass: align-center
+
+   Twister and a Test applications' project.
+
+
 The name of each testcase needs to be unique in the context of the overall
 testsuite and has to follow basic rules:
 
