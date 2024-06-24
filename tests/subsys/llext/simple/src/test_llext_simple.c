@@ -212,47 +212,55 @@ void load_call_unload(struct llext_test *test_case)
 		};								\
 		load_call_unload(&test_case);					\
 	}
-static LLEXT_CONST uint8_t hello_world_ext[] __aligned(4) = {
+
+/*
+ * ELF file should be aligned to at least sizeof(elf_word) to avoid issues. A
+ * larger value eases debugging, since it reduces the differences in addresses
+ * between similar runs.
+ */
+#define ELF_ALIGN __aligned(4096)
+
+static LLEXT_CONST uint8_t hello_world_ext[] ELF_ALIGN = {
 	#include "hello_world.inc"
 };
 LLEXT_LOAD_UNLOAD(hello_world, false, NULL)
 
-static LLEXT_CONST uint8_t logging_ext[] __aligned(4) = {
+static LLEXT_CONST uint8_t logging_ext[] ELF_ALIGN = {
 	#include "logging.inc"
 };
 LLEXT_LOAD_UNLOAD(logging, true, NULL)
 
-static LLEXT_CONST uint8_t relative_jump_ext[] __aligned(4) = {
+static LLEXT_CONST uint8_t relative_jump_ext[] ELF_ALIGN = {
 	#include "relative_jump.inc"
 };
 LLEXT_LOAD_UNLOAD(relative_jump, true, NULL)
 
-static LLEXT_CONST uint8_t object_ext[] __aligned(4) = {
+static LLEXT_CONST uint8_t object_ext[] ELF_ALIGN = {
 	#include "object.inc"
 };
 LLEXT_LOAD_UNLOAD(object, true, NULL)
 
 #ifndef CONFIG_LLEXT_TYPE_ELF_RELOCATABLE
-static LLEXT_CONST uint8_t syscalls_ext[] __aligned(4) = {
+static LLEXT_CONST uint8_t syscalls_ext[] ELF_ALIGN = {
 	#include "syscalls.inc"
 };
 LLEXT_LOAD_UNLOAD(syscalls, true, NULL)
 
-static LLEXT_CONST uint8_t threads_kernel_objects_ext[] __aligned(4) = {
+static LLEXT_CONST uint8_t threads_kernel_objects_ext[] ELF_ALIGN = {
 	#include "threads_kernel_objects.inc"
 };
 LLEXT_LOAD_UNLOAD(threads_kernel_objects, true, threads_objects_perm_setup)
 #endif
 
 #ifndef CONFIG_LLEXT_TYPE_ELF_OBJECT
-static LLEXT_CONST uint8_t multi_file_ext[] __aligned(4) = {
+static LLEXT_CONST uint8_t multi_file_ext[] ELF_ALIGN = {
 	#include "multi_file.inc"
 };
 LLEXT_LOAD_UNLOAD(multi_file, true, NULL)
 #endif
 
 #if defined(CONFIG_LLEXT_TYPE_ELF_RELOCATABLE) && defined(CONFIG_XTENSA)
-static LLEXT_CONST uint8_t pre_located_ext[] __aligned(4) = {
+static LLEXT_CONST uint8_t pre_located_ext[] ELF_ALIGN = {
 	#include "pre_located.inc"
 };
 
@@ -276,6 +284,37 @@ ZTEST(llext, test_pre_located)
 	zassert_equal(test_entry_fn, (void *)0xbada110c, "test_entry should be at 0xbada110c");
 
 	llext_unload(&ext);
+}
+#endif
+
+#if defined(CONFIG_LLEXT_STORAGE_WRITABLE)
+static LLEXT_CONST uint8_t find_section_ext[] ELF_ALIGN = {
+	#include "hello_world.inc"
+};
+
+ZTEST(llext, test_find_section)
+{
+	/* Reuses the hello_world extension. This exploits the fact that in the
+	 * STORAGE_WRITABLE cases, the symbol addresses will be inside the ELF
+	 * file buffer.
+	 */
+	struct llext_buf_loader buf_loader =
+		LLEXT_BUF_LOADER(find_section_ext, ARRAY_SIZE(find_section_ext));
+	struct llext_loader *loader = &buf_loader.loader;
+	struct llext_load_param ldr_parm = LLEXT_LOAD_PARAM_DEFAULT;
+	struct llext *ext = NULL;
+
+	int res = llext_load(loader, "find_section", &ext, &ldr_parm);
+
+	zassert_ok(res, "load should succeed");
+
+	uintptr_t symbol_ptr = (uintptr_t)llext_find_sym(&ext->exp_tab, "number");
+	uintptr_t section_ptr = (uintptr_t)find_section_ext
+				+ llext_find_section(loader, ".data");
+
+	zassert_equal(symbol_ptr, section_ptr,
+		      "number (%p) is not at .data section start (%p)",
+		      symbol_ptr, section_ptr);
 }
 #endif
 
