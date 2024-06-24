@@ -112,6 +112,7 @@ static struct dai_intel_ssp_plat_data *ssp_get_device_instance(uint32_t ssp_inde
 	return NULL;
 }
 
+#if CONFIG_SOC_INTEL_ACE30_PTL
 static void ssp_acquire_port(struct dai_intel_ssp_plat_data *ssp)
 {
 	ssp->acquire_count++;
@@ -130,6 +131,7 @@ static bool ssp_is_acquired(struct dai_intel_ssp_plat_data *ssp)
 {
 	return (ssp->acquire_count != 0);
 }
+#endif
 
 static void dai_ssp_update_bits(struct dai_intel_ssp *dp, uint32_t reg, uint32_t mask, uint32_t val)
 {
@@ -1787,10 +1789,6 @@ clk:
 						    SSMIDyCS_RSRE, SSMIDyCS_RSRE);
 				dai_ssp_update_bits(dp, SSMODyCS(dp->tdm_slot_group),
 						    SSMODyCS_TSRE, SSMODyCS_TSRE);
-#else
-				dai_ssp_update_bits(dp, SSCR1,
-						    SSCR1_TSRE | SSCR1_RSRE,
-						    SSCR1_TSRE | SSCR1_RSRE);
 #endif
 				/* enable port */
 				dai_ssp_update_bits(dp, SSCR0, SSCR0_SSE, SSCR0_SSE);
@@ -1823,10 +1821,6 @@ clk:
 				for (uint32_t idx = 0; idx < I2SIPCMC; ++idx) {
 					dai_ssp_update_bits(dp, SSMIDyCS(idx), SSMIDyCS_RSRE, 0);
 				}
-#else
-				dai_ssp_update_bits(dp, SSCR1,
-						    SSCR1_TSRE | SSCR1_RSRE,
-						    0);
 #endif
 				dai_ssp_update_bits(dp, SSCR0, SSCR0_SSE, 0);
 				LOG_INF("SSE clear for SSP%d", dp->dai_index);
@@ -2247,6 +2241,7 @@ static void dai_ssp_start(struct dai_intel_ssp *dp, int direction)
 		dai_ssp_update_bits(dp, SSMIDyCS(dp->tdm_slot_group),
 				    SSMIDyCS_RXEN, SSMIDyCS_RXEN);
 	}
+	ssp_acquire_port(dp->ssp_plat_data);
 #else
 	if (direction == DAI_DIR_PLAYBACK) {
 		LOG_INF("SSP%d TX", dp->dai_index);
@@ -2260,7 +2255,6 @@ static void dai_ssp_start(struct dai_intel_ssp *dp, int direction)
 #endif
 
 	dp->state[direction] = DAI_STATE_RUNNING;
-	ssp_acquire_port(dp->ssp_plat_data);
 
 	/*
 	 * Wait to get valid fifo status in clock consumer mode. TODO it's
@@ -2310,13 +2304,14 @@ static void dai_ssp_stop(struct dai_intel_ssp *dp, int direction)
 #if CONFIG_SOC_INTEL_ACE30_PTL
 		dai_ssp_update_bits(dp, SSMIDyCS(dp->tdm_slot_group), SSMIDyCS_RXEN, 0);
 		dai_ssp_update_bits(dp, SSMIDyCS(dp->tdm_slot_group), SSMIDyCS_RSRE, 0);
+		ssp_release_port(ssp_plat_data);
 #else
 		dai_ssp_update_bits(dp, SSRSA, SSRSA_RXEN, 0);
 		dai_ssp_update_bits(dp, SSCR1, SSCR1_RSRE, 0);
 #endif
 		ssp_empty_rx_fifo_on_stop(dp);
 		dp->state[DAI_DIR_CAPTURE] = DAI_STATE_PRE_RUNNING;
-		ssp_release_port(ssp_plat_data);
+
 	}
 
 	/* stop Tx if needed */
@@ -2327,13 +2322,13 @@ static void dai_ssp_stop(struct dai_intel_ssp *dp, int direction)
 		dai_ssp_update_bits(dp, SSMODyCS(dp->tdm_slot_group), SSMODyCS_TSRE, 0);
 		dai_ssp_empty_tx_fifo(dp);
 		dai_ssp_update_bits(dp, SSMODyCS(dp->tdm_slot_group), SSMODyCS_TXEN, 0);
+		ssp_release_port(ssp_plat_data);
 #else
 		dai_ssp_update_bits(dp, SSCR1, SSCR1_TSRE, 0);
 		dai_ssp_empty_tx_fifo(dp);
 		dai_ssp_update_bits(dp, SSTSA, SSTSA_TXEN, 0);
 #endif
 		dp->state[DAI_DIR_PLAYBACK] = DAI_STATE_PRE_RUNNING;
-		ssp_release_port(ssp_plat_data);
 	}
 
 	/* disable SSP port if no users */
@@ -2341,15 +2336,24 @@ static void dai_ssp_stop(struct dai_intel_ssp *dp, int direction)
 	    dp->state[DAI_DIR_PLAYBACK] == DAI_STATE_PRE_RUNNING &&
 	    COND_CODE_1(CONFIG_INTEL_ADSP_CAVS,
 			(!(ssp_plat_data->clk_active & SSP_CLK_BCLK_ES_REQ)), (true))) {
+#if CONFIG_SOC_INTEL_ACE30_PTL
 		if (!ssp_is_acquired(ssp_plat_data)) {
 			dai_ssp_update_bits(dp, SSCR0, SSCR0_SSE, 0);
 			LOG_INF("%s SSE clear SSP%d", __func__, ssp_plat_data->ssp_index);
 		}
+#else
+		dai_ssp_update_bits(dp, SSCR0, SSCR0_SSE, 0);
+		LOG_INF("%s SSE clear SSP%d", __func__, ssp_plat_data->ssp_index);
+#endif
 	}
 
+#if CONFIG_SOC_INTEL_ACE30_PTL
 	if (!ssp_is_acquired(ssp_plat_data)) {
 		dai_ssp_post_stop(dp);
 	}
+#else
+	dai_ssp_post_stop(dp);
+#endif
 
 	k_spin_unlock(&dp->lock, key);
 }
@@ -2512,11 +2516,14 @@ static int dai_ssp_remove(struct dai_intel_ssp *dp)
 {
 	struct dai_intel_ssp_plat_data *ssp_plat_data = dai_get_plat_data(dp);
 
+#if defined(CONFIG_SOC_INTEL_ACE30_PTL)
 	if (ssp_is_acquired(ssp_plat_data)) {
+		LOG_INF("%s 0x%x", __func__, dp->dai_index);
 		k_free(dai_get_drvdata(dp));
 		dai_set_drvdata(dp, NULL);
 		return 0;
 	}
+#endif
 
 	dai_ssp_pm_runtime_en_ssp_clk_gating(dp, ssp_plat_data->ssp_index);
 
