@@ -255,6 +255,8 @@ Build system and Infrastructure
 
   * Fixed issue with passing UTF-8 configs to applications using sysbuild.
 
+  * Sysbuild snippet support has been added, these can be applied using ``-Dsysbuild_SNIPPET=x``.
+
 Drivers and Sensors
 *******************
 
