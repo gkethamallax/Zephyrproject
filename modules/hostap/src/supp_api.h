@@ -137,6 +137,12 @@ int supplicant_filter(const struct device *dev, struct wifi_filter_info *filter)
  */
 int supplicant_channel(const struct device *dev, struct wifi_channel_info *channel);
 
+/** Get Wi-Fi connection paramters recently used
+ *
+ * @return pointer to the Wi-Fi connection paramters recently used
+ */
+struct wifi_connect_req_params *supplicant_get_wifi_conn_params(void);
+
 #ifdef CONFIG_AP
 /**
  * @brief Set Wi-Fi AP configuration
