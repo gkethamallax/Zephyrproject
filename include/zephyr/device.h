@@ -1080,7 +1080,7 @@ device_get_dt_nodelabels(const struct device *dev)
 			(.pm_constraints = (constraints_),))				\
 		IF_ENABLED(CONFIG_PM_POLICY_DEVICE_CONSTRAINTS,				\
 			(.pm_constraints_size = (constraints_size_),))			\
-		IF_ENABLED(CONFIG_PM_DEVICE, ({ .pm_base = (pm_),})) /**/		\
+		IF_ENABLED(CONFIG_PM_DEVICE, ({ .pm_base = (pm_),},)) /**/		\
 		IF_ENABLED(CONFIG_DEVICE_DT_METADATA,					\
 			   (.dt_meta = &Z_DEVICE_DT_METADATA_NAME_GET(dev_id_),))	\
 	}
