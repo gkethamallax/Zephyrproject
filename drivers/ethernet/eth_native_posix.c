@@ -20,6 +20,7 @@ LOG_MODULE_REGISTER(LOG_MODULE_NAME);
 #include <stdio.h>
 
 #include <zephyr/kernel.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <errno.h>
 #include <stddef.h>
@@ -342,6 +343,14 @@ static void eth_iface_init(struct net_if *iface)
 	if (CONFIG_ETH_NATIVE_POSIX_INTERFACE_COUNT == 1) {
 		ctx->if_name = CONFIG_ETH_NATIVE_POSIX_DRV_NAME;
 	}
+
+#if defined(CONFIG_ETH_NATIVE_POSIX_GET_DRV_NAME_FROM_ENV)
+	char *iface_env_name = getenv(CONFIG_ETH_NATIVE_POSIX_DRV_NAME_ENV_VAR);
+
+	if (iface_env_name != NULL) {
+		ctx->if_name = iface_env_name;
+	}
+#endif
 
 	LOG_DBG("Interface %p using \"%s\"", iface, ctx->if_name);
 

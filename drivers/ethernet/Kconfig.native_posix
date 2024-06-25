@@ -24,6 +24,20 @@ config ETH_NATIVE_POSIX_INTERFACE_COUNT
 	  multiple ports are defined in gPTP or PTP, then multiple network interfaces
 	  must be created here.
 
+config ETH_NATIVE_POSIX_GET_DRV_NAME_FROM_ENV
+	bool "Get driver name from environmental variable"
+	default n
+	help
+	  Get name of the ethernet driver from environmental variable.
+	  If variable is not found then, falls back to ETH_NATIVE_POSIX_DRV_NAME.
+
+config ETH_NATIVE_POSIX_DRV_NAME_ENV_VAR
+	string "Ethernet driver name variable"
+	default "ZEPHYR_ETHERNET_DRIVER_NAME"
+	depends on ETH_NATIVE_POSIX_GET_DRV_NAME_FROM_ENV
+	help
+	  Name of the environmental variable to get the driver name from
+
 config ETH_NATIVE_POSIX_DRV_NAME
 	string "Ethernet driver name"
 	default "zeth"
