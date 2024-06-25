@@ -955,6 +955,26 @@ endmenu
 rsource "Kconfig.mem_domain"
 rsource "Kconfig.smp"
 
+config STATIC_INIT_GNU_SUPPORTED
+	# As of today, we don't know of any toolchains that don't create
+	# either .ctors or .init_array sections containing initializer
+	# addresses in a fashion compatible with how Zephyr uses them.
+	def_bool y
+
+config STATIC_INIT_GNU
+	bool "Support GNU-compatible initializers and constructors"
+	default y
+	depends on STATIC_INIT_GNU_SUPPORTED
+	depends on !CMAKE_LINKER_GENERATOR
+	help
+	  GNU-compatible initialization of static objects. Zephyr itself
+	  has an internal system for running module-specific initialization
+	  code but C++ code and any external C modules may use initializers
+	  as defined by GNU-compatible toolchains. This increases the size
+	  of Zephyr binaries by around 100 bytes. If you know your
+	  application doesn't need any initializers, you can disable this
+	  option.
+
 config TICKLESS_KERNEL
 	bool "Tickless kernel"
 	default y if TICKLESS_CAPABLE

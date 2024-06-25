@@ -14,6 +14,7 @@ target_sources(app PRIVATE
 	src/bitarray.c
 	src/byteorder.c
 	src/clock.c
+	src/constructor.c
 	src/main.c
 	src/timeout_order.c
 	src/multilib.c
