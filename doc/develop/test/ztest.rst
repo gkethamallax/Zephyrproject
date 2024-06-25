@@ -228,6 +228,9 @@ the **bar** component of **foo**, you should copy the sample folder to
 In the example above ``tests/foo/bar`` signifies the path to the test and the
 ``test-identifier`` references a test defined in the :file:`testcase.yaml` file.
 
+See :ref:`Twister test project diagram <twister_test_project_diagram>` for more details
+on how Twister deals with Ztest application.
+
 To run all tests defined in a test project, run:
 
 .. code-block:: console
