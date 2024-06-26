@@ -1065,10 +1065,11 @@ device_get_dt_nodelabels(const struct device *dev)
  * @param api_ Reference to device API ops.
  * @param state_ Reference to device state.
  * @param deps_ Reference to device dependencies.
+ * @param node_id Devicetree node identifier
  * @param dev_id_ Device identifier token, as passed to Z_DEVICE_BASE_DEFINE
  */
 #define Z_DEVICE_INIT(name_, pm_, data_, config_, api_, state_, deps_,			\
-			constraints_size_, constraints_, dev_id_)			\
+			constraints_size_, constraints_, node_id, dev_id_)		\
 	{										\
 		.name = name_,								\
 		.config = (config_),							\
@@ -1080,9 +1081,11 @@ device_get_dt_nodelabels(const struct device *dev)
 			(.pm_constraints = (constraints_),))				\
 		IF_ENABLED(CONFIG_PM_POLICY_DEVICE_CONSTRAINTS,				\
 			(.pm_constraints_size = (constraints_size_),))			\
-		IF_ENABLED(CONFIG_PM_DEVICE, ({ .pm_base = (pm_),})) /**/		\
+		IF_ENABLED(CONFIG_PM_DEVICE, ({ .pm_base = (pm_),},)) /**/		\
 		IF_ENABLED(CONFIG_DEVICE_DT_METADATA,					\
-			   (.dt_meta = &Z_DEVICE_DT_METADATA_NAME_GET(dev_id_),))	\
+			   (IF_ENABLED(DT_NODE_EXISTS(node_id),				\
+				      (.dt_meta = &Z_DEVICE_DT_METADATA_NAME_GET(	\
+						dev_id_),))))				\
 	}
 
 /**
@@ -1118,7 +1121,8 @@ device_get_dt_nodelabels(const struct device *dev)
 		device, COND_CODE_1(Z_DEVICE_IS_MUTABLE(node_id), (device_mutable), (device)),     \
 		Z_DEVICE_SECTION_NAME(level, prio), DEVICE_NAME_GET(dev_id)) =                     \
 		Z_DEVICE_INIT(name, pm, data, config, api, state, deps,                            \
-		DT_PROP_LEN_OR(node_id, zephyr_disabling_power_states, 0), constraints, dev_id)
+			      DT_PROP_LEN_OR(node_id, zephyr_disabling_power_states, 0),           \
+			      constraints, node_id, dev_id)
 
 /* deprecated device initialization levels */
 #define Z_DEVICE_LEVEL_DEPRECATED_EARLY                                        \
@@ -1207,7 +1211,8 @@ device_get_dt_nodelabels(const struct device *dev)
 		(Z_DEVICE_PM_CONSTRAINTS_DEFINE(node_id, dev_id, __VA_ARGS__);))\
                                                                                 \
 	IF_ENABLED(CONFIG_DEVICE_DT_METADATA,                                   \
-		   (Z_DEVICE_DT_METADATA_DEFINE(node_id, dev_id);))             \
+		   (IF_ENABLED(DT_NODE_EXISTS(node_id),                         \
+			      (Z_DEVICE_DT_METADATA_DEFINE(node_id, dev_id);))))\
                                                                                 \
 	Z_DEVICE_BASE_DEFINE(node_id, dev_id, name, pm, data, config, level,    \
 		prio, api, state, Z_DEVICE_DEPS_NAME(dev_id),                   \
