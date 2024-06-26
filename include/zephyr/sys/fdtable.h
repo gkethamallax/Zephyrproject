@@ -10,7 +10,7 @@
 #include <sys/types.h>
 /* FIXME: For native_posix ssize_t, off_t. */
 #include <zephyr/fs/fs.h>
-#include <zephyr/sys/mutex.h>
+#include <zephyr/kernel.h>
 
 /* File mode bits */
 #define ZVFS_MODE_IFMT   0170000
@@ -147,6 +147,15 @@ void *z_get_fd_obj(int fd, const struct fd_op_vtable *vtable, int err);
  */
 void *z_get_fd_obj_and_vtable(int fd, const struct fd_op_vtable **vtable,
 			      struct k_mutex **lock);
+
+/**
+ * @brief Get lock from file descriptor.
+ *
+ * @param fd File descriptor previously returned by z_reserve_fd()
+ *
+ * @return Mutex lock or NULL
+ */
+struct k_mutex *z_get_fd_lock(int fd);
 
 /**
  * @brief Get the mutex and condition variable associated with the given object and vtable.
