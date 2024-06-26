@@ -1334,21 +1334,18 @@ function(zephyr_linker_sources location)
       message(FATAL_ERROR "zephyr_linker_sources() was called on a directory")
     endif()
 
-    # Find the relative path to the linker file from the include folder.
-    file(RELATIVE_PATH relpath ${ZEPHYR_BASE}/include ${path})
-
     # Create strings to be written into the file
-    set (include_str "/* Sort key: \"${SORT_KEY}\" */#include \"${relpath}\"")
+    set (include_str "/* Sort key: \"${SORT_KEY}\" */#include \"${path}\"")
 
     # Remove line from other snippet file, if already used
-    get_property(old_path GLOBAL PROPERTY "snippet_files_used_${relpath}")
+    get_property(old_path GLOBAL PROPERTY "snippet_files_used_${path}")
     if (DEFINED old_path)
       file(STRINGS ${old_path} lines)
-      list(FILTER lines EXCLUDE REGEX ${relpath})
+      list(FILTER lines EXCLUDE REGEX ${path})
       string(REPLACE ";" "\n;" lines "${lines}") # Add newline to each line.
       file(WRITE ${old_path} ${lines} "\n")
     endif()
-    set_property(GLOBAL PROPERTY "snippet_files_used_${relpath}" ${snippet_path})
+    set_property(GLOBAL PROPERTY "snippet_files_used_${path}" ${snippet_path})
 
     # Add new line to existing lines, sort them, and write them back.
     file(STRINGS ${snippet_path} lines) # Get current lines (without newlines).
