@@ -824,6 +824,7 @@
 		#io-channel-cells = <1>;
 		clocks = <&syscon MCUX_LPADC1_CLK>;
 		nxp,reference-supply = <&vref>;
+		ref-supply-val = <1800>;
 	};
 
 	lpadc1: lpadc@10e000 {

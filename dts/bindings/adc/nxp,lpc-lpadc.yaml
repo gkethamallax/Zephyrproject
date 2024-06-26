@@ -75,6 +75,12 @@ properties:
     type: phandles
     description: References to required regulators which must be enabled for LPADC to function
 
+  ref-supply-val:
+    type: int
+    description: |
+      When using the on-chip regulator as the reference voltage source, please use this property
+      to set the reference voltage.
+
   "#io-channel-cells":
     const: 1
 

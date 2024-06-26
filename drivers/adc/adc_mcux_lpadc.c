@@ -47,6 +47,7 @@ struct mcux_lpadc_config {
 	const struct device **ref_supplies;
 	const struct device *clock_dev;
 	clock_control_subsys_t clock_subsys;
+	int32_t ref_supply_val;
 };
 
 struct mcux_lpadc_data {
@@ -124,8 +125,7 @@ static int mcux_lpadc_channel_setup(const struct device *dev,
 {
 	const struct mcux_lpadc_config *config = dev->config;
 	const struct device **regulator = config->ref_supplies;
-	uint16_t vref_mv = CONTAINER_OF(channel_cfg, struct adc_dt_spec, channel_cfg)->vref_mv;
-	int32_t vref_uv = (int32_t)((uint32_t)vref_mv * 1000);
+	int32_t vref_uv = config->ref_supply_val * 1000;
 	struct mcux_lpadc_data *data = dev->data;
 	lpadc_conv_command_config_t *cmd;
 	uint8_t channel_side;
@@ -576,6 +576,7 @@ static const struct adc_driver_api mcux_lpadc_driver_api = {
 		.ref_supplies = mcux_lpadc_ref_supplies_##n, \
 		.clock_dev = DEVICE_DT_GET(DT_INST_CLOCKS_CTLR(n)),                                \
 		.clock_subsys = (clock_control_subsys_t)DT_INST_CLOCKS_CELL(n, name),\
+		.ref_supply_val = DT_INST_PROP_OR(n, ref_supply_val, 0),\
 	};									\
 	static struct mcux_lpadc_data mcux_lpadc_data_##n = {	\
 		ADC_CONTEXT_INIT_TIMER(mcux_lpadc_data_##n, ctx),	\
