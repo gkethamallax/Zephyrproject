@@ -57,6 +57,8 @@ struct ssd1306_config {
 	bool color_inversion;
 	bool sh1106_compatible;
 	int ready_time_ms;
+	bool use_internal_iref;
+	bool use_alternative_write;
 };
 
 struct ssd1306_data {
@@ -201,6 +203,22 @@ static inline int ssd1306_set_charge_pump(const struct device *dev)
 	return ssd1306_write_bus(dev, cmd_buf, sizeof(cmd_buf), true);
 }
 
+static inline int ssd1306_set_iref_mode(const struct device *dev)
+{
+	int errno = 0;
+	const struct ssd1306_config *config = dev->config;
+	uint8_t cmd_buf[] = {
+		SSD1306_SET_IREF_MODE,
+		SSD1306_SET_IREF_MODE_INTERNAL,
+	};
+
+	if (config->use_internal_iref) {
+		errno = ssd1306_write_bus(dev, cmd_buf, sizeof(cmd_buf), true);
+	}
+
+	return errno;
+}
+
 static int ssd1306_resume(const struct device *dev)
 {
 	uint8_t cmd_buf[] = {
@@ -310,7 +328,7 @@ static int ssd1306_write(const struct device *dev, const uint16_t x, const uint1
 	LOG_DBG("x %u, y %u, pitch %u, width %u, height %u, buf_len %u", x, y, desc->pitch,
 		desc->width, desc->height, buf_len);
 
-	if (config->sh1106_compatible) {
+	if (config->sh1106_compatible || config->use_alternative_write) {
 		return ssd1306_write_sh1106(dev, x, y, desc, buf, buf_len);
 	}
 
@@ -413,6 +431,10 @@ static int ssd1306_init_device(const struct device *dev)
 		return -EIO;
 	}
 
+	if (ssd1306_set_iref_mode(dev)) {
+		return -EIO;
+	}
+
 	if (ssd1306_write_bus(dev, cmd_buf, sizeof(cmd_buf), true)) {
 		return -EIO;
 	}
@@ -496,6 +518,8 @@ static const struct display_driver_api ssd1306_driver_api = {
 		.color_inversion = DT_PROP(node_id, inversion_on),                                 \
 		.sh1106_compatible = DT_NODE_HAS_COMPAT(node_id, sinowealth_sh1106),               \
 		.ready_time_ms = DT_PROP(node_id, ready_time_ms),                                  \
+		.use_internal_iref = DT_PROP(node_id, use_internal_iref),                          \
+		.use_alternative_write = DT_PROP(node_id, use_alternative_write),                  \
 		COND_CODE_1(DT_ON_BUS(node_id, spi), (SSD1306_CONFIG_SPI(node_id)),                \
 			    (SSD1306_CONFIG_I2C(node_id)))                                         \
 	};                                                                                         \
